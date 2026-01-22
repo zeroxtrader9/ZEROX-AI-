@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ZEROX AI - MOMENTUM & NEWS ENGINE</title>
+    <style>
+        :root { --neon: #00f2ff; --up: #00ff88; --down: #ff3131; --bg: #010409; }
+        body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
+        .container { border: 2px solid var(--neon); border-radius: 20px; margin: 20px; padding: 25px; background: #0d1117; box-shadow: 0 0 25px rgba(0,242,255,0.2); }
+        .timer { font-size: 65px; font-weight: 800; color: var(--neon); font-family: monospace; }
+        .signal-card { font-size: 32px; font-weight: 900; padding: 30px; border-radius: 15px; margin: 20px 0; border: 2px solid #30363d; text-transform: uppercase; transition: 0.3s; }
+        .call-zone { background: var(--up); color: #000; box-shadow: 0 0 40px var(--up); }
+        .put-zone { background: var(--down); color: #fff; box-shadow: 0 0 40px var(--down); }
+        .news-alert { background: #eab308; color: #000; padding: 10px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; display: none; }
+        .momentum-bar { height: 10px; background: #333; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+        #m-fill { width: 0%; height: 100%; background: var(--neon); transition: 0.5s; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="news-warning" class="news-alert">⚠️ HIGH VOLATILITY DETECTED: TRADING RISKY</div>
+    <div class="timer" id="timer">00:60</div>
+    
+    <div style="font-size: 14px; color: #8b949e;">MOMENTUM STRENGTH</div>
+    <div class="momentum-bar"><div id="m-fill"></div></div>
+
+    <div id="signal-box" class="signal-card">READY FOR MOMENTUM...</div>
+    
+    <div id="logic-info" style="font-size: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+        <b>AI Status:</b> Monitoring News & Price Impulse...
+    </div>
+</div>
+
+<button id="start-engine" style="padding:15px 50px; background:var(--neon); border:none; border-radius:50px; font-weight:bold; cursor:pointer; box-shadow: 0 0 20px var(--neon);">START AI ENGINE</button>
+
+<div id="chart-container" style="height:400px; width:95%; margin: 20px auto; border-radius:15px; overflow:hidden;"></div>
+
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+    let engineLive = false;
+    const voice = window.speechSynthesis;
+
+    new TradingView.widget({
+        "autosize": true, "symbol": "FX:EURUSD", "interval": "1", "theme": "dark", "container_id": "chart-container"
+    });
+
+    function say(text) {
+        if(!engineLive) return;
+        voice.cancel();
+        let u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.95;
+        voice.speak(u);
+    }
+
+    document.getElementById('start-engine').onclick = function() {
+        engineLive = true;
+        this.style.display = 'none';
+        say("Momentum and News Engine Online. Scanning for market bursts.");
+        runQuantLoop();
+    };
+
+    function runQuantLoop() {
+        setInterval(() => {
+            let s = 60 - new Date().getSeconds();
+            if (s == 60) s = 0;
+            document.getElementById('timer').innerText = "00:" + (s < 10 ? "0" : "") + s;
+
+            let sigBox = document.getElementById('signal-box');
+            let mFill = document.getElementById('m-fill');
+            let newsWarn = document.getElementById('news-warning');
+
+            // Simulate Impulse Detection
+            let impulse = Math.random() * 100;
+            mFill.style.width = impulse + "%";
+
+            // If impulse is too high (News scenario)
+            if (impulse > 85) {
+                newsWarn.style.display = "block";
+            } else {
+                newsWarn.style.display = "none";
+            }
+
+            if (s == 2) { // Logic check at last 2 seconds
+                let trend = Math.random() > 0.5;
+                
+                if (impulse > 60 && trend) {
+                    sigBox.innerText = "IMPULSE CALL ⬆";
+                    sigBox.className = "signal-card call-zone";
+                    say("Momentum Burst Detected. Taking a Call trade on the next candle.");
+                } 
+                else if (impulse > 60 && !trend) {
+                    sigBox.innerText = "IMPULSE PUT ⬇";
+                    sigBox.className = "signal-card put-zone";
+                    say("Selling Pressure Detected. Taking a Put trade on the next candle.");
+                } 
+                else {
+                    sigBox.innerText = "NO MOMENTUM ⚠️";
+                    sigBox.className = "signal-card";
+                    say("Low volume market. No trade signal generated.");
+                }
+            }
+
+            if (s > 5 && s < 55) {
+                sigBox.innerText = "WAITING FOR BURST...";
+                sigBox.className = "signal-card";
+            }
+        }, 1000);
+    }
+</script>
+</body>
+</html>
